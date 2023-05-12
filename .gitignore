@@ -1,0 +1,23 @@
+
+# Model checkpoints
+*.pt
+*.zip
+
+.idea/*
+.vscode
+.DS_Store
+__pycache__/
+
+.ipynb_checkpoints/
+
+# Data folders
+data/*
+static/
+# API keys
+aws_key*
+gcp_*
+*.mp4
+*.key
+
+venv/*
+env/*

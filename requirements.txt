@@ -1,0 +1,5 @@
+langchain
+# conda install -c pytorch faiss-cpu
+# xcode-select --install
+# termcolor > /dev/null
+openai
