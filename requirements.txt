@@ -3,3 +3,6 @@ langchain
 # xcode-select --install
 # termcolor > /dev/null
 openai
+weaviate-client
+tiktoken
+sentence-transformers
