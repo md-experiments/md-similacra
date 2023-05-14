@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field
 
 from langchain import LLMChain
 from langchain.base_language import BaseLanguageModel
-from langchain.experimental.generative_agents.memory import GenerativeAgentMemory
+from src.agents.memory import MDGenerativeAgentMemory
 from langchain.prompts import PromptTemplate
 
 
-class GenerativeAgent(BaseModel):
+class MDGenerativeAgent(BaseModel):
     """A character with memory and innate characteristics."""
 
     name: str
@@ -22,7 +22,7 @@ class GenerativeAgent(BaseModel):
     """Permanent traits to ascribe to the character."""
     status: str
     """The traits of the character you wish not to change."""
-    memory: GenerativeAgentMemory
+    memory: MDGenerativeAgentMemory
     """The memory object that combines relevance, recency, and 'importance'."""
     llm: BaseLanguageModel
     """The underlying language model."""

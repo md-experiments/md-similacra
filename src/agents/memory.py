@@ -11,7 +11,7 @@ from langchain.schema import BaseMemory, Document
 logger = logging.getLogger(__name__)
 
 
-class GenerativeAgentMemory(BaseMemory):
+class MDGenerativeAgentMemory(BaseMemory):
     llm: BaseLanguageModel
     """The core language model."""
 
@@ -129,7 +129,7 @@ class GenerativeAgentMemory(BaseMemory):
         document = Document(
             page_content=memory_content, metadata={"importance": importance_score}
         )
-        result = self.memory_retriever.add_documents([document])
+        result = self.memory_retriever.add_documents(document)
 
         # After an agent has processed a certain amount of memories (as measured by
         # aggregate importance), it is time to reflect on recent events to add
