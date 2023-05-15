@@ -246,7 +246,61 @@ class WeaviateIndexOps():
     return total_objects
 
 
-  def get_all_data(self, increment = 50, include_vector_and_id = False):
+  def query_kw_and_filter(self, ls_kw: list, filter_by: str, filter_value, limit = 10):
+    content = {
+            'path': [filter_by],
+            'operator': 'Equal',
+            'valueString': filter_value
+        }
+    nearText = {"concepts": ls_kw}
+
+    result = (
+        self.client.query.get(self.index_name, self.all_index_properties)
+        .with_where(content)
+        .with_near_text(nearText)
+        .with_additional(["id", "distance"])
+        .with_limit(limit)
+        .do()
+    )
+    results = result['data']['Get']['Thoughts']
+    data = []
+    if len(results):
+      for result in results:
+        new_obj = self._read_wv_object(result, include_additional = True)
+        data.append(new_obj)
+    return data
+    
+  def query_kw(self, ls_kw: list, limit = 10):
+    nearText = {"concepts": ls_kw}
+
+    result = (
+        self.client.query.get(self.index_name, self.all_index_properties)
+        .with_near_text(nearText)
+        .with_additional(["id", "distance"])
+        .with_limit(limit)
+        .do()
+    )
+    results = result['data']['Get']['Thoughts']
+    data = []
+    if len(results):
+      for result in results:
+        new_obj = self._read_wv_object(result, include_additional = True)
+        data.append(new_obj)
+    return data
+
+  def _read_wv_object(self, result, include_additional):
+    new_obj = {}
+    for key in result.keys():
+      if (key == "_additional"):
+          if include_additional:
+              for additionalKey in result[key].keys():
+                  assert(additionalKey not in result.keys())
+                  new_obj[f"{additionalKey}"] = result[key][additionalKey]
+      else:
+        new_obj[key] = result[key]
+    return new_obj
+  
+  def get_all_data(self, increment = 50, include_additional = False):
     #uuid_cursor = self.get_first_item()
     total_objects = self.get_number_records()
 
@@ -266,22 +320,14 @@ class WeaviateIndexOps():
           results = (
               self.client.query.get(self.index_name, self.all_index_properties)
               .with_additional(["id", "vector"])
-              .with_limit(50)
+              .with_limit(increment)
               .with_after(uuid_cursor)
               .do()
           )["data"]["Get"][self.index_name]
 
         # extract data from result into JSON
         for result in results:
-            new_obj = {}
-            for key in result.keys():
-                if (key == "_additional"):
-                    if include_vector_and_id:
-                        new_obj["_additional"] = {}
-                        for additionalKey in result[key].keys():
-                            new_obj["_additional"][additionalKey] = result[key][additionalKey]
-                else:
-                  new_obj[key] = result[key]
+            new_obj = self._read_wv_object(result, include_additional)
             data.append(new_obj)
             # update uuid cursor to continue the loop
             # we have just exited a loop where result holds the last obj
