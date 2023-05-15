@@ -6,3 +6,5 @@ openai
 weaviate-client
 tiktoken
 sentence-transformers
+# google-search-results # for serp search
+# google-api-python-client # needed for google search
