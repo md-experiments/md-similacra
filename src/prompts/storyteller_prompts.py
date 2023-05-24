@@ -104,3 +104,60 @@ prompt = ChatPromptTemplate(
                      "section_name","section_description","mentioned_characters"],
 )
 
+
+# How you would like your reponse structured. This is basically a fancy prompt template
+scene_response_schemas = [
+    ResponseSchema(
+        name="scene_content", 
+        description="The content of what happens in this scene, this will be in script format where every new line will be either a narrator speaking or one of the characters. Narrator lines will start with NARRATOR: and character dialogue will start with the name of each character when they are speaking, for a character named John Smith, the line will start with JOHN SMITH: followed by what they say. For characters speaking, only mention characters from the list of characters mentioned in this scene. They can refer to other characters in the story"),
+    ResponseSchema(
+        name="scene_image", 
+        description="A description of the image used for the scene, it will link to the content of the scene and will be sent to a AI model that can create images based on a description"),
+    ResponseSchema(
+        name="scene_audio",  
+        description="A description of the audio, this will fit the content of the scene and will be sent to a AI model that can create audio music based on a description")
+]
+
+# How you would like to parse your output
+scene_output_parser = StructuredOutputParser.from_response_schemas(scene_response_schemas)
+
+scene_instructions = scene_output_parser.get_format_instructions()
+
+template = """
+You are a scriptwriter who writes and is inspired by {author_name} and you write stories in their style. 
+Their style is typically described as {author_style}. 
+
+This is the story summary: 
+{story_summary}
+
+These are the characters in the story:
+{character_descriptions}
+
+Story titled: {section_name}, with the description: {section_description}
+This part also mentions these characters {mentioned_characters}.
+This is the story so far {story_so_far}.
+
+You are writing the script for a specific scene within this part of the story. 
+This is the description of the scene you are writing currently
+{this_scene}
+
+Please write the detailed description for the script of the scene.
+Refer to the story and character descriptions when writing this, do not contradict things mentioned already.
+However, you can be creative with what happens in this scene
+
+{format_instructions}
+
+Wrap your final output with closed and open brackets (a list of json objects)
+
+YOUR RESPONSE:
+"""
+
+scene_prompt = ChatPromptTemplate(
+    messages=[
+        HumanMessagePromptTemplate.from_template(template)  
+    ],
+    input_variables=["author_name", "author_style", "story_summary", "character_descriptions",
+                     "section_name","section_description","mentioned_characters",
+                     "story_so_far", 'this_scene'],
+    partial_variables={"format_instructions": scene_instructions}
+)
