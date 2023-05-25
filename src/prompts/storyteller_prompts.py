@@ -90,6 +90,8 @@ This is the story summary:
 These are the characters in the story:
 {character_descriptions}
 
+{story_so_far}
+
 Write part of the story titled: {section_name}, with the description: {section_description}
 This part also mentions these characters {mentioned_characters}
 
@@ -112,7 +114,7 @@ scene_response_schemas = [
         description="The content of what happens in this scene, this will be in script format where every new line will be either a narrator speaking or one of the characters. Narrator lines will start with NARRATOR: and character dialogue will start with the name of each character when they are speaking, for a character named John Smith, the line will start with JOHN SMITH: followed by what they say. For characters speaking, only mention characters from the list of characters mentioned in this scene. They can refer to other characters in the story"),
     ResponseSchema(
         name="scene_image", 
-        description="A description of the image used for the scene, it will link to the content of the scene and will be sent to a AI model that can create images based on a description"),
+        description="A description of the image used for the scene, it will link to the content of the scene and will be sent to a AI model that can create images based on a description. Use descriptive language for the background, objects and people in the scene. Mention relevant details to the scene: how and where are objects and people placed in reltion to each other, what they are doing, any actions taking place. When mentioning characters, refer to them with their full names"),
     ResponseSchema(
         name="scene_audio",  
         description="A description of the audio, this will fit the content of the scene and will be sent to a AI model that can create audio music based on a description")
@@ -133,11 +135,14 @@ This is the story summary:
 These are the characters in the story:
 {character_descriptions}
 
-This section is titled: {section_name}, with the description: {section_description}
-These are the characters with active roles in the section {mentioned_characters}.
 {story_so_far}
 
+This section is titled: {section_name}, with the description: {section_description}
+These are the characters with active roles in the section {mentioned_characters}.
+
 You are writing the script for the scenes within this part of the story. 
+This is the list of scenes to write
+{scenes_description}
 
 Please write the detailed description for the script of each scene
 Refer to the story so far, previous scenes and character descriptions when writing this, do not contradict things mentioned already.
@@ -156,6 +161,6 @@ scene_prompt = ChatPromptTemplate(
     ],
     input_variables=["author_name", "author_style", "story_summary", "character_descriptions",
                      "section_name","section_description","mentioned_characters",
-                     "story_so_far", 'this_scene'],
+                     "story_so_far", 'scenes_description'],
     partial_variables={"format_instructions": scene_instructions}
 )

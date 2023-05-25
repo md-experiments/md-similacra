@@ -29,7 +29,7 @@ def voice_assignment(characters,
         voices_lookup[f'available_male'].remove(voice_choice)
     else:
         voices_lookup[f'available_female'].remove(voice_choice)
-    print(voices_lookup)
+    #print(voices_lookup)
     for character in characters:
         name = character['character_name']
         gender = character['character_gender'].lower().strip()
