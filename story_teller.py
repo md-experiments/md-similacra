@@ -5,6 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 import json, yaml
 from tqdm import tqdm
+from src.voice_selection import voice_assignment
+
 
 import os
 with open('openai.key','r') as f:
@@ -20,16 +22,20 @@ class StoryTeller():
         self.data_storage = data_storage
         self.story_key = story_key
 
-    def save_results(self, output, path_result = '', path_result_safe = ''):
+    def save_results(self, output, path_result, path_result_safe, save_as_text = False):
         if "```json" in output.content:
             json_string = output.content.split("```json")[1].replace('```','').strip()
         else:
             json_string = output.content
-        try:
-            result = json.loads(json_string)
-            yaml.dump(result, open(path_result,'w'))
-        except:
+        if save_as_text:
+            result = json_string
             yaml.dump(json_string, open(path_result_safe,'w'))
+        else:
+            try:
+                result = json.loads(json_string)
+                yaml.dump(result, open(path_result,'w'))
+            except:
+                yaml.dump(json_string, open(path_result_safe,'w'))
         return result
 
     def create_story_summary(self):
@@ -60,6 +66,13 @@ class StoryTeller():
                 f' Role: {char_dict["character_role"]}, Bio: {char_dict["character_traits"]}\n'
         self.character_descriptions_str = '\n'.join([character_string_builder(js) for js in self.character_descriptions ])
 
+    def assign_voices(self):
+        voice_assignments = voice_assignment(self.character_descriptions, old_threshold = 35, 
+                voices_choice_path = './voices.yaml', seed_value = 2023)
+        path_voice_assignments = os.path.join(self.data_storage,self.story_key,'01_voice_assignments.yaml')
+        yaml.dump(voice_assignments,open(path_voice_assignments,'w'))
+        self.voice_assignments = voice_assignments
+
     def create_story_plot(self):
         path_story_plot = os.path.join(self.data_storage,self.story_key,'02_story_plot.yaml')
         path_story_plot_safe = os.path.join(self.data_storage,self.story_key,'02_story_plot_safe.txt')
@@ -89,12 +102,13 @@ class StoryTeller():
         scenes = ''.join(this_scene)
         return scenes
 
-    def create_section_detail(self, section_id, section_name, section_description, mentioned_characters):
+    def create_section_detail(self, section_id, section_name, section_description, mentioned_characters, story_so_far):
 
-        path_section_detail = os.path.join(self.data_storage,self.story_key,f'03_section_detail_{section_id}.yaml')
-        path_section_detail_safe = os.path.join(self.data_storage,self.story_key,f'03_section_detail_{section_id}_safe.txt')
-        if os.path.exists(path_section_detail) or os.path.exists(path_section_detail_safe):
-            section_detail = yaml.load(open(path_section_detail,'r'), Loader=yaml.FullLoader)
+        path_section_prompt = os.path.join(self.data_storage,self.story_key,f'03_{section_id}_section_detail_prompt.txt')
+        path_section_detail = os.path.join(self.data_storage,self.story_key,f'03_{section_id}_section_detail.yaml')
+        path_section_detail_safe = os.path.join(self.data_storage,self.story_key,f'03_{section_id}_section_detail_safe.txt')
+        if os.path.exists(path_section_detail_safe):
+            section_detail = yaml.load(open(path_section_detail_safe,'r'), Loader=yaml.FullLoader)
         else:
             _input = section_detail_prompt.format_prompt(
                 author_name = self.author_name, 
@@ -104,9 +118,12 @@ class StoryTeller():
                 section_name = section_name,
                 section_description = section_description,
                 mentioned_characters = mentioned_characters,
+                story_so_far = story_so_far
             )
+            with open(path_section_prompt,'w') as f:
+                f.write(_input.messages[0].content)
             output = chat_model(_input.to_messages())
-            section_detail = self.save_results(output, path_section_detail, path_section_detail_safe)
+            section_detail = self.save_results(output, path_section_detail, path_section_detail_safe, save_as_text=True)
         return section_detail
     
     def create_scripts_from_scenes_for_part(self, 
@@ -119,10 +136,11 @@ class StoryTeller():
         else:
             story_so_far = f'This is the story so far {story_so_far}.\n'
 
-        path_story_plot = os.path.join(self.data_storage,self.story_key,f'03_section_plot_{section_id}.yaml')
-        path_story_plot_safe = os.path.join(self.data_storage,self.story_key,f'03_section_plot_{section_id}_safe.txt')
+        path_story_plot_prompt = os.path.join(self.data_storage,self.story_key,f'04_{section_id}_section_plot_prompt.txt')
+        path_story_plot = os.path.join(self.data_storage,self.story_key,f'04_{section_id}_section_plot.yaml')
+        path_story_plot_safe = os.path.join(self.data_storage,self.story_key,f'04_{section_id}_section_plot_safe.txt')
         if os.path.exists(path_story_plot) or os.path.exists(path_story_plot_safe):
-            self.story_plot = yaml.load(open(path_story_plot,'r'), Loader=yaml.FullLoader)
+            scene_script = yaml.load(open(path_story_plot,'r'), Loader=yaml.FullLoader)
         else:
             _input = scene_prompt.format_prompt(
                 author_name = self.author_name, 
@@ -135,25 +153,36 @@ class StoryTeller():
                 story_so_far = story_so_far,
                 scenes_description = scenes_description
             )
+            with open(path_story_plot_prompt,'w') as f:
+                f.write(_input.messages[0].content)
+
             output = chat_model(_input.to_messages())
-            result = self.save_results(output, path_story_plot, path_story_plot_safe)
-            self.story_plot = result
+            scene_script = self.save_results(output, path_story_plot, path_story_plot_safe)
+        return scene_script
 
 lovecraft0 = StoryTeller(
     author_name = 'H. P. Lovecraft',
-    author_style = 'described as atmospheric, dark, and highly descriptive. His works often revolve around cosmic horror and the unknown, incorporating elements of science fiction and supernatural themes. Lovecraft\'s prose is characterized by intricate world-building, richly detailed descriptions of otherworldly creatures and settings, and a sense of foreboding and dread that pervades his stories. He frequently employs a first-person narrative, immersing readers in the unsettling perspectives of his characters as they confront the unfathomable horrors of the Lovecraftian universe.',
+    author_style = 'atmospheric, dark, and highly descriptive. His works often revolve around cosmic horror and the unknown, incorporating elements of science fiction and supernatural themes. Lovecraft\'s prose is characterized by intricate world-building, richly detailed descriptions of otherworldly creatures and settings, and a sense of foreboding and dread that pervades his stories. He frequently employs a first-person narrative, immersing readers in the unsettling perspectives of his characters as they confront the unfathomable horrors of the Lovecraftian universe.',
     data_storage = './data/stories',
     story_key = 'lovecraft0'
 )
 lovecraft0.create_story_summary()
 lovecraft0.create_story_characters()
+lovecraft0.assign_voices()
+
 lovecraft0.create_story_plot()
 
-story_so_far = []
+for section_id, section in enumerate(tqdm(lovecraft0.story_plot[:3])):
 
-for section_id, section in enumerate(tqdm(lovecraft0.story_plot[:2])):
+    story_so_far = [t['section_description']+'\n' for t in lovecraft0.story_plot[:section_id]]
     section_detail = lovecraft0.create_section_detail(section_id, section['section_name'], section['section_description'],
-                                     section['characters'])
+                                     section['characters'], story_so_far)
     scenes_detail = lovecraft0.create_scenes_for_part(section_detail)
-    lovecraft0.create_scripts_from_scenes_for_part(section_id, section['section_name'], section['section_description'],
+    scene_script = lovecraft0.create_scripts_from_scenes_for_part(section_id, section['section_name'], section['section_description'],
                                      section['characters'], story_so_far, scenes_detail)
+    
+    for scene in scene_script:
+        # Make audio
+        pass
+        # Make image
+        pass
