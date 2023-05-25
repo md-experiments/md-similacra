@@ -23,9 +23,6 @@ Their style is typically described as {author_style}.
 This is the story summary: 
 {story_summary}
 
-These are the characters in the story:
-{character_descriptions}
-
 Please imagine a set of characters to take part in the story and add their descritions
 
 {format_instructions}
@@ -39,7 +36,7 @@ character_description_prompt = ChatPromptTemplate(
     messages=[
         HumanMessagePromptTemplate.from_template(template)  
     ],
-    input_variables=["author_name", "author_style", "story_summary", "character_descriptions"],
+    input_variables=["author_name", "author_style", "story_summary"],
     partial_variables={"format_instructions": character_format_instructions}
 )
 
@@ -61,9 +58,12 @@ Their style is typically described as {author_style}.
 This is the story summary: 
 {story_summary}
 
+These are the characters in the story:
+{character_descriptions}
+
 Please create a plot for this story by describing a series of sections relevant.
 
-{story_sections_instructions}
+{format_instructions}
 
 Wrap your final output with closed and open brackets (a list of json objects)
 
@@ -74,13 +74,13 @@ story_sections_prompt = ChatPromptTemplate(
     messages=[
         HumanMessagePromptTemplate.from_template(template)  
     ],
-    input_variables=["author_name", "author_style", "story_summary"],
+    input_variables=["author_name", "author_style", "story_summary", "character_descriptions"],
     partial_variables={"format_instructions": story_sections_instructions}
 )
 
 
 
-template = """
+section_expansion_template = """
 You are a storyteller who writes and is inspired by {author_name} and you write stories in their style. 
 Their style is typically described as {author_style}. 
 
@@ -96,9 +96,9 @@ This part also mentions these characters {mentioned_characters}
 YOUR RESPONSE:
 """
 
-prompt = ChatPromptTemplate(
+section_detail_prompt = ChatPromptTemplate(
     messages=[
-        HumanMessagePromptTemplate.from_template(template)  
+        HumanMessagePromptTemplate.from_template(section_expansion_template)  
     ],
     input_variables=["author_name", "author_style", "story_summary", "character_descriptions",
                      "section_name","section_description","mentioned_characters"],
@@ -133,16 +133,14 @@ This is the story summary:
 These are the characters in the story:
 {character_descriptions}
 
-Story titled: {section_name}, with the description: {section_description}
-This part also mentions these characters {mentioned_characters}.
-This is the story so far {story_so_far}.
+This section is titled: {section_name}, with the description: {section_description}
+These are the characters with active roles in the section {mentioned_characters}.
+{story_so_far}
 
-You are writing the script for a specific scene within this part of the story. 
-This is the description of the scene you are writing currently
-{this_scene}
+You are writing the script for the scenes within this part of the story. 
 
-Please write the detailed description for the script of the scene.
-Refer to the story and character descriptions when writing this, do not contradict things mentioned already.
+Please write the detailed description for the script of each scene
+Refer to the story so far, previous scenes and character descriptions when writing this, do not contradict things mentioned already.
 However, you can be creative with what happens in this scene
 
 {format_instructions}
