@@ -1,0 +1,22 @@
+female_old:
+- Bella
+- Sam
+female_young:
+- Elli
+- Domi
+- Rachel
+male_old:
+- Adam
+- Antoni
+- Arnold
+male_young:
+- Sam
+- Josh
+- Arnold
+narrator:
+- Antoni
+nonbinary_old:
+- Sam
+nonbinary_young:
+- Sam
+# https://api.elevenlabs.io/v1/voices
