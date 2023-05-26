@@ -1,5 +1,5 @@
 import random, yaml
-from src.utils import flatten_list
+from src.utils import flatten_list, pad_integer
 
 
 def voice_filter(voices_dict, gender_starts_with):
@@ -55,6 +55,54 @@ def voice_assignment(characters,
             print(f'Missing in available for gender {look_up_key}: {name}')
             voice_choice = random.choice(list(available_voices[gender]))
 
-        voice_assignments[name] = voice_choice
+        voice_assignments[name.upper()] = voice_choice
     return voice_assignments
         
+
+def extract_texts_from_scene(text, voice_assignments: dict, main_path_to_audio: str):
+    """
+        text: str or list
+        path_to_audio: './data/audio/05_02_{audio_key}.mp3'
+    """
+
+    if isinstance(text,list):
+        text_split = text
+    elif isinstance(text,str):
+        text_split = text.split('\n')
+    result = []
+    for i, txt in enumerate(text_split):
+        try:
+            likely_name = txt.upper().split(':')[0]
+            if len(likely_name.split())>2:
+                print(f'ERROR: Not sure about {txt}')
+            elif (len(likely_name.split())==1) and (likely_name=="NARRATOR"):
+                character = 'NARRATOR'
+                voice =  voice_assignments[character]
+            elif (len(likely_name.split())==1):
+                # Likely GPT returned just first name
+                print('::',likely_name)
+                for k in voice_assignments:
+                    if likely_name.upper() in k.upper():
+                        character = k.upper()
+                        voice = voice_assignments[character]
+                        break
+            elif (len(likely_name.split())==2) and (voice_assignments.get(likely_name.upper(),'')!=''):
+                character = likely_name.upper()
+                voice = voice_assignments[character]
+            else:
+                print(f'ERROR: Could not assign name {txt}')
+                voice = ''
+
+            txt_to_read = ':'.join(txt.split(':')[1:])
+            audio_key = f"{pad_integer(i)}_{likely_name.split()[0]}__{txt_to_read.replace(' ','_')[:30]}"
+            path_to_audio = main_path_to_audio.format(audio_key=audio_key)
+            result.append({
+                'raw_text': txt,
+                'text': txt_to_read,
+                'character': character,
+                'voice': voice,
+                'path_audio': path_to_audio
+            })
+        except:
+            print(txt)
+    return result

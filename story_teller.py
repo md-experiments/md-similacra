@@ -5,7 +5,9 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 import json, yaml
 from tqdm import tqdm
-from src.voice_selection import voice_assignment
+from src.utils import pad_integer, flatten_list
+from tts.tts import create_tts_11labs
+from src.voice_selection import voice_assignment, extract_texts_from_scene
 
 
 import os
@@ -114,7 +116,7 @@ class StoryTeller():
                 author_name = self.author_name, 
                 author_style = self.author_style,
                 story_summary = self.story_summary,
-                character_descriptions = self.character_descriptions,
+                character_descriptions = self.character_descriptions_str,
                 section_name = section_name,
                 section_description = section_description,
                 mentioned_characters = mentioned_characters,
@@ -146,7 +148,7 @@ class StoryTeller():
                 author_name = self.author_name, 
                 author_style = self.author_style,
                 story_summary = self.story_summary,
-                character_descriptions = self.character_descriptions,
+                character_descriptions = self.character_descriptions_str,
                 section_name = section_name,
                 section_description = section_description,
                 mentioned_characters = mentioned_characters,
@@ -172,17 +174,30 @@ lovecraft0.assign_voices()
 
 lovecraft0.create_story_plot()
 
-for section_id, section in enumerate(tqdm(lovecraft0.story_plot[:3])):
+for section_id, section in enumerate(tqdm(lovecraft0.story_plot)):
 
-    story_so_far = [t['section_description']+'\n' for t in lovecraft0.story_plot[:section_id]]
+    story_so_far = ''.join([t['section_description']+'\n' for t in lovecraft0.story_plot[:section_id]])
     section_detail = lovecraft0.create_section_detail(section_id, section['section_name'], section['section_description'],
                                      section['characters'], story_so_far)
     scenes_detail = lovecraft0.create_scenes_for_part(section_detail)
     scene_script = lovecraft0.create_scripts_from_scenes_for_part(section_id, section['section_name'], section['section_description'],
                                      section['characters'], story_so_far, scenes_detail)
+    # Make audio
+    path_to_voice_script = os.path.join(lovecraft0.data_storage,lovecraft0.story_key,f'05_{pad_integer(section_id)}_voice_scripts.yaml')
+
+    if not os.path.exists(path_to_voice_script):
+        all_voice_scripts = []
+        for scene_id, scene in enumerate(scene_script):
+            path_to_audio = os.path.join(lovecraft0.data_storage,lovecraft0.story_key,'audio',f'audio_{pad_integer(section_id)}_{pad_integer(scene_id)}_')
+            path_to_audio = path_to_audio + '{audio_key}.mp3'
+            voice_script = extract_texts_from_scene(scene['SCENE_CONTENT'], lovecraft0.voice_assignments, path_to_audio)
+            all_voice_scripts.append(voice_script)
+        all_voice_scripts = flatten_list(all_voice_scripts)
+        for v in all_voice_scripts:
+            if not os.path.exists(v['path_audio']):
+                create_tts_11labs(v['text'], v['path_audio'], v['voice'], api_key_path = './tts/elevenlabs.key')
+        yaml.dump(all_voice_scripts, open(path_to_voice_script,'w'))
+
+    # Make image
+
     
-    for scene in scene_script:
-        # Make audio
-        pass
-        # Make image
-        pass

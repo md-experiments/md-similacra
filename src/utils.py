@@ -11,3 +11,6 @@ def log_traceback():
 
 def flatten_list(ls):
     return list(itertools.chain.from_iterable(ls))
+
+def pad_integer(i):
+    return str(i) if len(str(i))==2 else f'0{i}'
