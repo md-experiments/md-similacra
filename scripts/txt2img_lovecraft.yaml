@@ -1,0 +1,30 @@
+defaults:
+  batch_size: 1
+  cfg_scale: 13
+  height: 720
+  n_iter: 1
+  restore_faces: true
+  sampler_name: Euler a
+  seed: 10
+  seed_resize_from_h: 10
+  seed_resize_from_w: 10
+  steps: 50
+  styles: []
+  subseed: 10
+  width: 1280
+negative_prompt:
+- ugly
+- poorly drawn face
+- out of frame
+- extra limbs
+- disfigured
+- deformed
+- ((face out of frame))
+- bad anatomy
+- watermark
+- signature
+- cut off
+- low contrast
+- underexposed
+- overexposed
+style: photorealistic

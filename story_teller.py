@@ -6,10 +6,11 @@ import pandas as pd
 import json, yaml
 from tqdm import tqdm
 from src.utils import pad_integer, flatten_list
-from tts.tts import create_tts_11labs
-from tts.polly import create_tts_polly
+#from tts.tts import create_tts_11labs
+from src.tts.polly import create_tts_polly
 from src.voice_selection import voice_assignment, extract_texts_from_scene
-
+from src.utils import makedirs, hash_text
+from src.txt2img.image_prompts import prepare_prompt, create_image_with_sd_api
 
 import os
 with open('openai.key','r') as f:
@@ -24,6 +25,7 @@ class StoryTeller():
         self.author_style = author_style
         self.data_storage = data_storage
         self.story_key = story_key
+        self.path_story = os.path.join(data_storage, story_key)
 
     def save_results(self, output, path_result, path_result_safe, save_as_text = False):
         if "```json" in output.content:
@@ -172,7 +174,7 @@ class StoryTeller():
             scene_script = self.save_results(output, path_story_plot, path_story_plot_safe)
         return scene_script
 '''
-lovecraft0 = StoryTeller(
+st = StoryTeller(
     author_name = 'H. P. Lovecraft',
     author_style = 'atmospheric, dark, and highly descriptive. His works often revolve around cosmic horror and the unknown, incorporating elements of science fiction and supernatural themes. Lovecraft\'s prose is characterized by intricate world-building, richly detailed descriptions of otherworldly creatures and settings, and a sense of foreboding and dread that pervades his stories. He frequently employs a first-person narrative, immersing readers in the unsettling perspectives of his characters as they confront the unfathomable horrors of the Lovecraftian universe.',
     data_storage = './data/stories',
@@ -180,35 +182,36 @@ lovecraft0 = StoryTeller(
 )
 '''
 
-lovecraft0 = StoryTeller(
+api_params_path = './scripts/txt2img_donaldson.yaml'
+st = StoryTeller(
     author_name = 'Julia Donaldson',
     author_style = "Engages young readers and captures their imaginations. Her writing is known for its rhythmic and rhyming patterns, enchanting storytelling, and memorable characters. She often introduces protagonists who face challenges or embark on quests, making her books both entertaining and educational. Her stories are often written in lively and catchy verse, which creates a musical quality that children find captivating.",
     data_storage = './data/stories',
     story_key = 'donaldson0'
 )
-lovecraft0.create_story_summary()
-lovecraft0.create_story_characters()
-lovecraft0.assign_voices(path_voices = './voices_polly.yaml')
+st.create_story_summary()
+st.create_story_characters()
+st.assign_voices(path_voices = './voices_polly.yaml')
 
-lovecraft0.create_story_plot()
+st.create_story_plot()
 
-for section_id, section in enumerate(tqdm(lovecraft0.story_plot)):
+for section_id, section in enumerate(tqdm(st.story_plot)):
 
-    story_so_far = ''.join([t['section_description']+'\n' for t in lovecraft0.story_plot[:section_id]])
-    section_detail = lovecraft0.create_section_detail(section_id, section['section_name'], section['section_description'],
+    story_so_far = ''.join([t['section_description']+'\n' for t in st.story_plot[:section_id]])
+    section_detail = st.create_section_detail(section_id, section['section_name'], section['section_description'],
                                      section['characters'], story_so_far)
-    scenes_detail = lovecraft0.create_scenes_for_part(section_detail)
-    scene_script = lovecraft0.create_scripts_from_scenes_for_part(section_id, section['section_name'], section['section_description'],
+    scenes_detail = st.create_scenes_for_part(section_detail)
+    scene_script = st.create_scripts_from_scenes_for_part(section_id, section['section_name'], section['section_description'],
                                      section['characters'], story_so_far, scenes_detail)
     # Make audio
-    path_to_voice_script = os.path.join(lovecraft0.data_storage,lovecraft0.story_key,f'05_{pad_integer(section_id)}_voice_scripts.yaml')
+    path_to_voice_script = os.path.join(st.data_storage,st.story_key,f'05_{pad_integer(section_id)}_voice_scripts.yaml')
 
     if not os.path.exists(path_to_voice_script):
         all_voice_scripts = []
         for scene_id, scene in enumerate(scene_script):
-            path_to_audio = os.path.join(lovecraft0.data_storage,lovecraft0.story_key,'audio',f'audio_{pad_integer(section_id)}_{pad_integer(scene_id)}_')
+            path_to_audio = os.path.join(st.data_storage,st.story_key,'audio',f'audio_{pad_integer(section_id)}_{pad_integer(scene_id)}_')
             path_to_audio = path_to_audio + '{audio_key}.mp3'
-            voice_script = extract_texts_from_scene(scene['SCENE_CONTENT'], lovecraft0.voice_assignments, path_to_audio)
+            voice_script = extract_texts_from_scene(scene['SCENE_CONTENT'], st.voice_assignments, path_to_audio)
             all_voice_scripts.append(voice_script)
         all_voice_scripts = flatten_list(all_voice_scripts)
         for v in all_voice_scripts:
@@ -218,5 +221,19 @@ for section_id, section in enumerate(tqdm(lovecraft0.story_plot)):
         yaml.dump(all_voice_scripts, open(path_to_voice_script,'w'))
 
     # Make image
+    data = yaml.load(open(api_params_path,'r'), Loader=yaml.FullLoader)
+    params = data['defaults']
 
+    params['negative_prompt'] = ', '.join(data['negative_prompt'])
+    hash_params = hash_text(json.dumps(params))[:12]
+    path_images = os.path.join(st.path_story,'images')
+    makedirs([path_images])
+
+    for scene_id, scene in enumerate(scene_script):
+        path_image = os.path.join(path_images,f'img_{section_id}_{scene_id}.jpeg')
+        path_image_prompt = os.path.join(path_images,f'img_{section_id}_{scene_id}_prompt.txt')
+        prompt = prepare_prompt(scene, st.character_descriptions)
+        params['prompt'] = f"{prompt}, {data['style']}"
+        create_image_with_sd_api(path_image, params)
+        open(path_image_prompt,'w').write(prompt)
     

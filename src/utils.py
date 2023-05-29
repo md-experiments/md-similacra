@@ -1,4 +1,4 @@
-import datetime
+import datetime, os
 import traceback
 import itertools
 from hashlib import md5
@@ -14,3 +14,8 @@ def flatten_list(ls):
 
 def pad_integer(i):
     return str(i) if len(str(i))==2 else f'0{i}'
+
+def makedirs(paths):
+    for path in paths:
+        if not os.path.exists(path):
+            os.makedirs(path)
