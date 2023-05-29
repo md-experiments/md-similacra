@@ -3,8 +3,8 @@ from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
 
 character_response_schemas = [
     ResponseSchema(name="character_name", description="This is the name of the character"),
-    ResponseSchema(name="character_age", description="This is the age of the character"),
-    ResponseSchema(name="character_gender", description="Character gender: male, female, non-binary"),
+    ResponseSchema(name="character_age", description="integer, This is the age of the character, as a positive integer"),
+    ResponseSchema(name="character_gender", description="Character gender: male or female"),
     ResponseSchema(name="character_appearance", description="This is the visual appearance of the character: their face, build, details of how they dress and how they appear to others"),
     ResponseSchema(name="character_traits", description="This briefly describes the character profile, their background, traits, habits and goals"),
     ResponseSchema(name="character_role",  description="Consider the story summary. This is the role the character plays in the story: are they central or secondary, helping the protagonist, ignoring, thwarting or deceiving them, do they grow and how")

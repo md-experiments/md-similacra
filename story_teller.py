@@ -7,6 +7,7 @@ import json, yaml
 from tqdm import tqdm
 from src.utils import pad_integer, flatten_list
 from tts.tts import create_tts_11labs
+from tts.polly import create_tts_polly
 from src.voice_selection import voice_assignment, extract_texts_from_scene
 
 
@@ -68,9 +69,9 @@ class StoryTeller():
                 f' Role: {char_dict["character_role"]}, Bio: {char_dict["character_traits"]}\n'
         self.character_descriptions_str = '\n'.join([character_string_builder(js) for js in self.character_descriptions ])
 
-    def assign_voices(self):
-        voice_assignments = voice_assignment(self.character_descriptions, old_threshold = 35, 
-                voices_choice_path = './voices.yaml', seed_value = 2023)
+    def assign_voices(self, path_voices = './voices_polly.yaml'):
+        voice_assignments = voice_assignment(self.character_descriptions, old_threshold = 35, child_threshild=14,
+                voices_choice_path = path_voices, seed_value = 2023)
         path_voice_assignments = os.path.join(self.data_storage,self.story_key,'01_voice_assignments.yaml')
         yaml.dump(voice_assignments,open(path_voice_assignments,'w'))
         self.voice_assignments = voice_assignments
@@ -141,8 +142,17 @@ class StoryTeller():
         path_story_plot_prompt = os.path.join(self.data_storage,self.story_key,f'04_{section_id}_section_plot_prompt.txt')
         path_story_plot = os.path.join(self.data_storage,self.story_key,f'04_{section_id}_section_plot.yaml')
         path_story_plot_safe = os.path.join(self.data_storage,self.story_key,f'04_{section_id}_section_plot_safe.txt')
-        if os.path.exists(path_story_plot) or os.path.exists(path_story_plot_safe):
+        if os.path.exists(path_story_plot):
             scene_script = yaml.load(open(path_story_plot,'r'), Loader=yaml.FullLoader)
+        elif os.path.exists(path_story_plot_safe):
+            try:
+                txt = open(path_story_plot_safe,'r').read()
+                txt = txt.replace('\\n', '').replace('\\', '').replace('\n', '').replace('  ', '').replace(',]', ']')
+                if txt.startswith('"') and txt.endswith('"'):
+                    txt = txt[1:-1]
+                scene_script = json.loads(txt.strip())
+            except:
+                pass
         else:
             _input = scene_prompt.format_prompt(
                 author_name = self.author_name, 
@@ -161,16 +171,24 @@ class StoryTeller():
             output = chat_model(_input.to_messages())
             scene_script = self.save_results(output, path_story_plot, path_story_plot_safe)
         return scene_script
-
+'''
 lovecraft0 = StoryTeller(
     author_name = 'H. P. Lovecraft',
     author_style = 'atmospheric, dark, and highly descriptive. His works often revolve around cosmic horror and the unknown, incorporating elements of science fiction and supernatural themes. Lovecraft\'s prose is characterized by intricate world-building, richly detailed descriptions of otherworldly creatures and settings, and a sense of foreboding and dread that pervades his stories. He frequently employs a first-person narrative, immersing readers in the unsettling perspectives of his characters as they confront the unfathomable horrors of the Lovecraftian universe.',
     data_storage = './data/stories',
     story_key = 'lovecraft0'
 )
+'''
+
+lovecraft0 = StoryTeller(
+    author_name = 'Julia Donaldson',
+    author_style = "Engages young readers and captures their imaginations. Her writing is known for its rhythmic and rhyming patterns, enchanting storytelling, and memorable characters. She often introduces protagonists who face challenges or embark on quests, making her books both entertaining and educational. Her stories are often written in lively and catchy verse, which creates a musical quality that children find captivating.",
+    data_storage = './data/stories',
+    story_key = 'donaldson0'
+)
 lovecraft0.create_story_summary()
 lovecraft0.create_story_characters()
-lovecraft0.assign_voices()
+lovecraft0.assign_voices(path_voices = './voices_polly.yaml')
 
 lovecraft0.create_story_plot()
 
@@ -195,7 +213,8 @@ for section_id, section in enumerate(tqdm(lovecraft0.story_plot)):
         all_voice_scripts = flatten_list(all_voice_scripts)
         for v in all_voice_scripts:
             if not os.path.exists(v['path_audio']):
-                create_tts_11labs(v['text'], v['path_audio'], v['voice'], api_key_path = './tts/elevenlabs.key')
+                #create_tts_11labs(v['text'], v['path_audio'], v['voice'], api_key_path = './tts/elevenlabs.key')
+                create_tts_polly(v['text'], v['path_audio'], v['voice'], api_key_path = './tts/elevenlabs.key')
         yaml.dump(all_voice_scripts, open(path_to_voice_script,'w'))
 
     # Make image
