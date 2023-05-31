@@ -24,7 +24,7 @@ def create_tts_polly(text, save_to_path, voice = 'Bella', api_key_path ='../aws_
     try:
         # Request speech synthesis
         response = polly.synthesize_speech(Text=text, OutputFormat=output_format,
-                                            VoiceId=voice)
+                                            VoiceId=voice, Engine='neural')
     except (BotoCoreError, ClientError) as error:
         # The service returned an error, exit gracefully
         print(error)
