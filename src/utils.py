@@ -19,3 +19,14 @@ def makedirs(paths):
     for path in paths:
         if not os.path.exists(path):
             os.makedirs(path)
+
+
+def files_in_dir(path, filters = []):
+    fls = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
+    fls = [os.path.join(path,f) for f in fls]
+    if len(filters) > 0:
+        if not isinstance(filters,list):
+            filters = [filters]
+        for filter in filters:
+            fls = [f for f in fls if filter in f]
+    return fls
