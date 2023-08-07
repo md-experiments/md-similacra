@@ -1,7 +1,7 @@
 defaults:
   batch_size: 1
   cfg_scale: 13
-  height: 720
+  height: 768
   n_iter: 1
   restore_faces: true
   sampler_name: Euler a
@@ -11,7 +11,7 @@ defaults:
   steps: 50
   styles: []
   subseed: 10
-  width: 1280
+  width: 768
 negative_prompt:
 - ugly
 - poorly drawn face
@@ -27,4 +27,4 @@ negative_prompt:
 - low contrast
 - underexposed
 - overexposed
-style: kid's cartoon
+style: studio ghibli, pixar and disney animation, concept art, polycount contest winner, hearthstone official splash art, hearthstone card game artwork, high res beautiful lighting, detail render

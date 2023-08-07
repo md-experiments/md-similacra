@@ -1,0 +1,20 @@
+author_name: H. P. Lovecraft
+author_style: atmospheric, dark, and highly descriptive. His works often revolve around
+  cosmic horror and the unknown, incorporating elements of science fiction and supernatural
+  themes. Lovecraft's prose is characterized by intricate world-building, richly detailed
+  descriptions of otherworldly creatures and settings, and a sense of foreboding and
+  dread that pervades his stories. He frequently employs a first-person narrative,
+  immersing readers in the unsettling perspectives of his characters as they confront
+  the unfathomable horrors of the Lovecraftian universe.
+bg_audio: Voices - Patrick Patrikios.mp3
+data_storage: ./data/stories
+seed: 1
+story_key: lovecraft2
+story_summary: "In a secluded rural town, strange occurrences begin to unfold after\
+  \ a meteor crashes nearby. As the townspeople investigate, they discover that the\
+  \ meteor is not what it seems \u2013 it is a vessel containing an ancient extraterrestrial\
+  \ entity with unimaginable powers. The entity slowly infiltrates the minds of the\
+  \ residents, causing madness and transforming them into grotesque, tentacled abominations.\
+  \ A group of survivors must unravel the cosmic secrets behind the entity's arrival\
+  \ and find a way to stop its influence before it consumes the entire town and spreads\
+  \ its alien malevolence beyond."

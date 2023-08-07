@@ -1,0 +1,15 @@
+author_name: Julia Donaldson
+author_style: Engages young readers and captures their imaginations. Her writing is
+  known for its rhythmic and rhyming patterns, enchanting storytelling, and memorable
+  characters. She often introduces protagonists who face challenges or embark on quests,
+  making her books both entertaining and educational. Her stories are often written
+  in lively and catchy verse, which creates a musical quality that children find captivating.
+bg_audio: Organic Guitar House - Dyalla.mp3
+data_storage: ./data/stories
+seed: 1
+story_key: donaldson0
+story_summary: When Sammy the Squirrel finds a mysterious key in the forest, he embarks
+  on a thrilling adventure to discover what it unlocks. Along the way, he encounters
+  a cast of animal friends who each have a clue to help him on his quest. Through
+  teamwork and problem-solving, they navigate through obstacles and unravel the secret
+  behind the lost key.

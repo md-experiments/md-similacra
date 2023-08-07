@@ -1,0 +1,17 @@
+author_name: H. P. Lovecraft
+author_style: atmospheric, dark, and highly descriptive. His works often revolve around
+  cosmic horror and the unknown, incorporating elements of science fiction and supernatural
+  themes. Lovecraft's prose is characterized by intricate world-building, richly detailed
+  descriptions of otherworldly creatures and settings, and a sense of foreboding and
+  dread that pervades his stories. He frequently employs a first-person narrative,
+  immersing readers in the unsettling perspectives of his characters as they confront
+  the unfathomable horrors of the Lovecraftian universe.
+bg_audio: Voices - Patrick Patrikios.mp3
+data_storage: ./data/stories
+seed: 1
+story_key: lovecraft0
+story_summary: A small coastal town is plagued by a series of strange disappearances.
+  As the townsfolk investigate, they uncover a cult worshipping an ancient entity
+  that dwells in the depths of the nearby forest. The cult seeks to awaken the deity,
+  intending to bring about the end of the world. The townspeople must unravel the
+  secrets of the cult before it's too late.

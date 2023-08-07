@@ -1,7 +1,7 @@
 defaults:
   batch_size: 1
   cfg_scale: 13
-  height: 720
+  height: 768
   n_iter: 1
   restore_faces: true
   sampler_name: Euler a
@@ -11,13 +11,16 @@ defaults:
   steps: 50
   styles: []
   subseed: 10
-  width: 1280
+  width: 768
 negative_prompt:
 - ugly
+- easynegative
+- bad anatomy
+- duplicate:2
 - poorly drawn face
 - out of frame
 - extra limbs
-- disfigured
+- bad composition
 - deformed
 - ((face out of frame))
 - bad anatomy
@@ -26,5 +29,6 @@ negative_prompt:
 - cut off
 - low contrast
 - underexposed
+- text
 - overexposed
-style: photorealistic
+style: photorealistic, film noir
