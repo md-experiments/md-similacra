@@ -48,21 +48,23 @@ to-\ngether we are strong
 EXAMPLE OUTPUT:
 together we are strong
 
-- Remove left over text, in coherent snippets like page numbers or headers, footers. Example: "Figure 1. Recall@1000 of the 4 query sets.\nNo entities\n0.87\nHashed entities\n0.67\n" Should be removed
+- Remove left over text, in coherent snippets like page numbers or headers, footers.
 EXAMPLE INPUT: 
-to-\ngether we are strong
+Figure 1. Recall@1000 of the 4 query sets.\nNo entities\n0.87\nHashed entities\n0.67\nSecondly, these\nmethods integrate the retrieved examples into a module of SMT
 EXAMPLE OUTPUT:
-together we are strong
+Secondly, these methods integrate the retrieved examples into a module of SMT
 
-
+Here is a full end to end example:
 EXAMPLE INPUT:
 Figure 1. Recall@1000 of the 4 query sets.\nNo entities\n0.87\nHashed entities\n0.67\nSecondly, these\nmethodsintegratetheretrievedexamplesintoa\nmoduleofSMTinthewayswhichcannotmake\nfull use of the knowledge in retrieved examples.Consequently, all these methods adopt an\noff-the-shelf metric for retrieval, leading to sub-\noptimal performance.\n4.2 Translation Memory in NMT\nTranslation memory has been widely explored in\nNeural Machine Translation (NMT).
 
-EXPECTED OUTPUT:
+EXAMPLE OUTPUT:
 Secondly, these methods integrate the retrieved examples into a module of SMT in the ways which can not make full use of the knowledge in retrieved examples. Consequently, all these methods adopt an off-the-shelf metric for retrieval, leading to sub-optimal performance.\n\n4.2 Translation Memory in NMT\n\nTranslation memory has been widely explored in Neural Machine Translation (NMT).
 
 INPUT:
 {input}
+
+OUTPUT:
 """
 
 
