@@ -1,6 +1,7 @@
 # AI Story Teller
 
-A automated tool that creates a video story from a simple description. For some sample descriptions, see ./scripts
+AI tool that creates a complete video story from a simple description. 
+For some sample seed descriptions, see ./scripts
 
 ## How it works
 1. The tool uses your description to create an extensive plot outline
@@ -13,3 +14,8 @@ A automated tool that creates a video story from a simple description. For some 
 
 ## Samples 
 Some sample videos coming soon
+
+## Success and Challenges 
+- The stiry is consistently sequential and providing a summary back to the AI creates a relatively long and complex plot with good consistency. This is very hard to achieve in simpler setups
+- As will be apparent from the samples, the results are still very generic in terms of story line as the AI struggles to speak about specific events and actions by the characters
+- Image generation does not produce consistent characters, despite attempts to inject consistent character descriptions. This is the case aith all image AI
